@@ -4,7 +4,7 @@ from model_utils.models import TimeStampedModel
 
 
 class Category(TimeStampedModel):
-    title = models.CharField(_('Категрия'), max_length=200)
+    title = models.CharField(_('Категория'), max_length=200)
 
     def __str__(self):
         return self.title
@@ -21,7 +21,7 @@ class Genre(TimeStampedModel):
         return self.title
 
     class Meta:
-        verbose_name = _('Жанры')
+        verbose_name = _('Жанр')
         verbose_name_plural = _('Жанры')
 
 

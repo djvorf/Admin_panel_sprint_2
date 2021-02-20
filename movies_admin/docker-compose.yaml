@@ -2,18 +2,16 @@ version: "3.9"
 
 services:
   postgres:
-    container_name: postgres_container
+    container_name: postgres
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      PGDATA: /data/postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     volumes:
-      - postgres:/data/postgres
+      - C:\Users\djvor\PycharmProjects\Admin_panel_sprint_2\movies_admin\helm\postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    networks:
-      - postgres
     restart: unless-stopped
 
   web:
@@ -21,8 +19,16 @@ services:
     build: .
     environment:
       - SECRET_KEY=csdmklcmklLK#MKMFCLKMDLKvmklsmdlkvmvlmdslkvsmdvl
+      - DBNAME=postgres
+      - DBUSER=postgres
+      - DBPASSWORD=postgres
+      - DBHOST=postgres
+      - DBPORT=5432
     volumes:
       - .:/code
     ports:
       - "8000:8000"
-    command: python manage.py runserver 0.0.0.0:8000
+    entrypoint: ['python', 'manage.py', 'migrate']
+    depends_on:
+      - postgres
+    restart: always
