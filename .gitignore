@@ -38,6 +38,10 @@ coverage.xml
 *,cover
 .hypothesis/
 
+staticfiles
+static
+media
+
 # dotenv
 .env
 

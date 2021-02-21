@@ -1,6 +1,6 @@
 FROM python:3
 ENV PYTHONUNBUFFERED=1
-WORKDIR /code
-COPY . /code/
+WORKDIR /movie_admin
+COPY . /movie_admin/
 RUN pip install -r requirements/base.txt
-RUN pip install -r requirements/development.txt
+RUN pip install -r requirements/production.txt
