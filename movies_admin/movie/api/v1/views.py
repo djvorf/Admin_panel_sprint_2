@@ -1,54 +1,44 @@
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.list import BaseListView
 
-from movie.models import Movie
-
-
-def get_all_movies():
-    movies = Movie.objects.prefetch_related('genres', 'actors', 'writers', 'directors', 'genres')
-    movies_list = []
-    for movie in movies:
-        movies_list.append({
-            "id": movie.id,
-            "title": movie.title,
-            "description": movie.description,
-            "creation_date": movie.create_date,
-            "rating": movie.rating,
-            "type": movie.category.title,
-            "actors": [f"{actor.get('first_name')} {actor.get('last_name')}" for actor in
-                       movie.actors.values('first_name', 'last_name')],
-            "writers": [f"{actor.get('first_name')} {actor.get('last_name')}" for actor in
-                        movie.writers.values('first_name', 'last_name')],
-            "directors": [f"{actor.get('first_name')} {actor.get('last_name')}" for actor in
-                          movie.directors.values('first_name', 'last_name')],
-            "genres": [genre.get('title') for genre in movie.genres.values('title')],
-        })
-    return movies_list
+from movie.models import Movie, PersonMovie, RoleType
 
 
 class MovieMixin:
     model = Movie
     http_method_names = ['get']
-    movies = get_all_movies()
+
+    def get_queryset(self):
+        self.queryset = Movie.objects.prefetch_related('genres', 'persons').values(
+            'id', 'title', 'description', 'create_date', 'age_qualification', 'rating', 'file'
+        ).annotate(
+            type=ArrayAgg('category__title', distinct=True),
+            genres=ArrayAgg('genres__title', distinct=True),
+            actors=ArrayAgg('persons__full_name', distinct=True, filter=Q(personmovie__role=RoleType.ACTOR)),
+            writers=ArrayAgg('persons__full_name', distinct=True, filter=Q(personmovie__role=RoleType.WRITER)),
+            directors=ArrayAgg('persons__full_name', distinct=True, filter=Q(personmovie__role=RoleType.DIRECTOR))
+        )
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context)
 
 
 class MovieView(MovieMixin, BaseListView):
-    paginate_by = 1
+    paginate_by = 2
 
     def get_context_data(self, **kwargs):
-        page_size = self.get_paginate_by(queryset=self.movies)
-        result = self.paginate_queryset(queryset=self.movies, page_size=page_size)
+        page_size = self.get_paginate_by(queryset=self.queryset)
+        paginator, page, queryset, is_paginator = self.paginate_queryset(self.queryset, page_size=page_size)
         context = {
-            "count": len(result),
-            "total_pages": int(result[0].num_pages),
-            "prev": int(result[1].previous_page_number() if result[1].has_previous() else result[1].number),
-            "next": int(result[1].next_page_number() if result[1].has_next() else result[1].number),
-            "result": result[2][0]
+            "count": len(self.queryset),
+            "total_pages": paginator.num_pages,
+            "prev": page.previous_page_number() if page.has_previous() else page.number,
+            "next": page.next_page_number() if page.has_next() else page.number,
+            "result": f"{queryset}"
         }
         return context
 

@@ -1,6 +1,11 @@
 from django.contrib import admin
-from .models import Movie, Category, Genre, Person
+from .models import Movie, Category, Genre, Person, PersonMovie
 from django.utils.translation import gettext_lazy as _
+
+
+@admin.register(PersonMovie)
+class PersonMovieAdmin(admin.ModelAdmin):
+    list_display = ('person', 'movie')
 
 
 @admin.register(Genre)
@@ -15,28 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name')
-
-
-class ActorInLine(admin.TabularInline):
-    model = Movie.actors.through
-    extra = 0
-    verbose_name = _('Актер')
-    verbose_name_plural = _('Актеры')
-
-
-class WriterInLine(admin.TabularInline):
-    model = Movie.writers.through
-    extra = 0
-    verbose_name = _('Сценарист')
-    verbose_name_plural = _('Сценаристы')
-
-
-class DirectorInLine(admin.TabularInline):
-    model = Movie.directors.through
-    extra = 0
-    verbose_name = _('Режиссер')
-    verbose_name_plural = _('Режиссеры')
+    list_display = ('full_name',)
 
 
 class GenreInLine(admin.TabularInline):
@@ -46,10 +30,17 @@ class GenreInLine(admin.TabularInline):
     verbose_name_plural = _('Жанры')
 
 
+class PersonMovieInLine(admin.TabularInline):
+    model = PersonMovie
+    extra = 0
+    verbose_name = _('Персона')
+    verbose_name_plural = _('Персоны')
+
+
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'create_date')
-    fields = ('title', 'description', 'create_date', 'age_qualification', 'file', 'category')
+    fields = ('title', 'description', 'create_date', 'age_qualification', 'rating', 'file', 'category')
     list_filter = ('category', 'age_qualification', 'create_date', 'title')
     search_fields = ('title', 'description', 'id', 'category', 'age_qualification', 'create_date')
-    inlines = [ActorInLine, WriterInLine, DirectorInLine, GenreInLine]
+    inlines = [GenreInLine, PersonMovieInLine]
