@@ -49,4 +49,6 @@ class MovieDetailView(MovieMixin, BaseDetailView):
     pk_url_kwarg = 'uuid'
 
     def get_context_data(self, **kwargs):
-        return self.get_object()
+        # Можно ли использовать просто return self.get_object()? Вроде так же возвращает нужный фильм
+
+        return super().get_context_data(**kwargs)['object']

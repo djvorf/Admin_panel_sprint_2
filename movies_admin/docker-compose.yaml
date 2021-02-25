@@ -14,22 +14,14 @@ services:
   web:
     container_name: django_admin
     build: .
-    environment:
-      - SECRET_KEY=csdmklcmklLK#MKMFCLKMDLKvmklsmdlkvmvlmdslkvsmdvl
-      - DBNAME=postgres
-      - DBUSER=postgres
-      - DBPASSWORD=postgres
-      - DBHOST=postgres
-      - DBPORT=5432
     volumes:
       - ./static_volume:/movie_admin/staticfiles
     ports:
       - "8000:8000"
-    depends_on:
-      - postgres
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     expose:
       - 8000
+    depends_on:
+      - postgres
     restart: always
 
   postgres:
@@ -40,10 +32,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - C:\Users\djvor\PycharmProjects\Admin_panel_sprint_2\movies_admin\helm\postgres:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: always
 
 volumes:
   static_volume:
+  postgres_data:
