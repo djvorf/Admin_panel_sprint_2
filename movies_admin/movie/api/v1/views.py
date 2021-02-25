@@ -22,6 +22,7 @@ class MovieMixin:
             writers=ArrayAgg('persons__full_name', distinct=True, filter=Q(personmovie__role=RoleType.WRITER)),
             directors=ArrayAgg('persons__full_name', distinct=True, filter=Q(personmovie__role=RoleType.DIRECTOR))
         )
+        return self.queryset.all()
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context)
@@ -34,19 +35,18 @@ class MovieView(MovieMixin, BaseListView):
         page_size = self.get_paginate_by(queryset=self.queryset)
         paginator, page, queryset, is_paginator = self.paginate_queryset(self.queryset, page_size=page_size)
         context = {
-            "count": len(self.queryset),
+            "count": paginator.count,
             "total_pages": paginator.num_pages,
             "prev": page.previous_page_number() if page.has_previous() else page.number,
             "next": page.next_page_number() if page.has_next() else page.number,
-            "result": f"{queryset}"
+            "result": list(queryset)
         }
         return context
 
 
 class MovieDetailView(MovieMixin, BaseDetailView):
+    slug_field = 'id'
+    pk_url_kwarg = 'uuid'
 
     def get_context_data(self, **kwargs):
-        for movie in self.movies:
-            if str(movie.get('id')) == self.kwargs.get('pk'):
-                context = movie
-                return context
+        return self.get_object()
