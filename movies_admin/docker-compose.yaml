@@ -16,6 +16,13 @@ services:
     build: .
     volumes:
       - ./static_volume:/movie_admin/staticfiles
+    environment:
+      - SECRET_KEY=csdmklcmklLK#MKMFCLKMDLKvmklsmdlkvmvlmdslkvsmdvl
+      - DBNAME=postgres
+      - DBUSER=postgres
+      - DBPASSWORD=postgres
+      - DBHOST=postgres
+      - DBPORT=5432
     ports:
       - "8000:8000"
     expose:
